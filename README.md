@@ -27,21 +27,21 @@ pip install -e .
 ```bash
 # 简单字段访问
 echo '{"name": "Alice", "age": 30}' | jp .name
-# 输出: Alice
+# 输出: "Alice"
 
 # 嵌套对象
 echo '{"user": {"name": "Bob"}}' | jp .user.name
-# 输出: Bob
+# 输出: "Bob"
 
 # 数组索引
 echo '{"items": ["apple", "banana", "cherry"]}' | jp '.items[1]'
-# 输出: banana
+# 输出: "banana"
 
 # 通配符
 echo '{"users": [{"name": "Alice"}, {"name": "Bob"}]}' | jp '.users[*].name'
 # 输出:
-# Alice
-# Bob
+# "Alice"
+# "Bob"
 ```
 
 ### 命令行选项

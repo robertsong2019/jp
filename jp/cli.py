@@ -17,12 +17,11 @@ from .query import query, query_json
 from . import __version__
 
 
-def format_output(value) -> str:
-    """格式化输出值"""
-    if isinstance(value, str):
+def format_output(value, raw: bool = False) -> str:
+    """格式化输出值：默认 JSON 编码（字符串带引号）；raw=True 时字符串裸输出"""
+    if raw and isinstance(value, str):
         return value
-    else:
-        return json.dumps(value, ensure_ascii=False)
+    return json.dumps(value, ensure_ascii=False)
 
 
 def main(args: Optional[list] = None):
@@ -93,20 +92,15 @@ def main(args: Optional[list] = None):
             value = results[0]
             if parsed_args.json_output:
                 print(json.dumps(value, ensure_ascii=False, indent=2))
-            elif parsed_args.raw and isinstance(value, str):
-                print(value)
             else:
-                print(format_output(value))
+                print(format_output(value, raw=parsed_args.raw))
         else:
             # 多个结果
             if parsed_args.json_output:
                 print(json.dumps(results, ensure_ascii=False, indent=2))
             else:
                 for value in results:
-                    if parsed_args.raw and isinstance(value, str):
-                        print(value)
-                    else:
-                        print(format_output(value))
+                    print(format_output(value, raw=parsed_args.raw))
     
     except json.JSONDecodeError as e:
         print(f"Error: Invalid JSON - {e}", file=sys.stderr)

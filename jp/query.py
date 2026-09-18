@@ -89,6 +89,7 @@ def query(data: Any, path: str) -> List[Any]:
     
     # 执行查询链
     results = [data]
+    prev_was_wildcard = False
     
     for node in nodes:
         new_results = []
@@ -96,12 +97,14 @@ def query(data: Any, path: str) -> List[Any]:
             try:
                 new_results.extend(_query_single(result, node))
             except QueryError:
-                # 跳过不匹配的结果（用于通配符场景）
-                pass
+                # 仅在通配符扇出语境下跳过不匹配的结果；普通路径错误上抛
+                if not prev_was_wildcard:
+                    raise
         results = new_results
         
         if not results:
             break
+        prev_was_wildcard = isinstance(node, WildcardNode)
     
     return results
 
