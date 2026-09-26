@@ -8,6 +8,7 @@
 - RBRACKET: ] 数组索引结束
 - IDENTIFIER: 标识符（属性名）
 - NUMBER: 数字（数组索引）
+- STRING: 引号字符串（括号内引号键，["my-key"]，JSONPath 标准语法）
 - WILDCARD: * 通配符
 """
 
@@ -23,6 +24,7 @@ class TokenType(Enum):
     RBRACKET = auto()
     IDENTIFIER = auto()
     NUMBER = auto()
+    STRING = auto()
     WILDCARD = auto()
     EOF = auto()
 
@@ -74,6 +76,26 @@ class Lexer:
             result.append(self.current_char)
             self.advance()
         return int(''.join(result))
+
+    def read_string(self) -> str:
+        """读取双引号字符串（当前字符必须是起始 "），支持 \\" 与 \\\\ 转义"""
+        self.advance()  # 跳过开引号
+        result = []
+        while self.current_char:
+            if self.current_char == '"':
+                self.advance()
+                return ''.join(result)
+            if self.current_char == '\\':
+                self.advance()
+                if self.current_char in ('"', '\\'):
+                    result.append(self.current_char)
+                    self.advance()
+                else:
+                    raise LexerError(f"Invalid escape sequence: \\{self.current_char}")
+                continue
+            result.append(self.current_char)
+            self.advance()
+        raise LexerError("Unterminated string in bracket")
     
     def tokenize(self) -> List[Token]:
         """将输入字符串转换为 Token 列表"""
@@ -117,6 +139,9 @@ class Lexer:
                 if self.current_char == '*':
                     tokens.append(Token(TokenType.WILDCARD, '*'))
                     self.advance()
+                elif self.current_char == '"':
+                    string = self.read_string()
+                    tokens.append(Token(TokenType.STRING, string))
                 elif self.current_char and self.current_char.isdigit():
                     number = self.read_number()
                     tokens.append(Token(TokenType.NUMBER, number))

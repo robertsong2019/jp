@@ -100,6 +100,10 @@ class Parser:
                 elif self.current_token.type == TokenType.WILDCARD:
                     nodes.append(WildcardNode())
                     self.advance()
+                elif self.current_token.type == TokenType.STRING:
+                    # 引号键 ["my-key"] —— 同字段访问语义
+                    nodes.append(FieldNode(self.current_token.value))
+                    self.advance()
                 elif self.current_token.type == TokenType.IDENTIFIER:
                     # 支持字符串索引（用于字典）
                     nodes.append(FieldNode(self.current_token.value))
